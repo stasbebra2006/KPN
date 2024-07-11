@@ -15,30 +15,40 @@ document.addEventListener('keydown', function (event) {
 	if (event.key === ' ') startGame();
 });
 
-async function startGame() {
+function startGame() {
 	alert("Hra začíná! Zadejte K pro Kámen, P pro Papír nebo N pro Nůžky.");
 	getChoices()
-	await determineWinner(userChoice, computerChoice);
-	showTheWinner();
+	determineWinner();
 	gameHistory.push({ userChoice, computerChoice, userScore, computerScore });
 }
 
-async function determineWinner(userChoice, computerChoice) {
-	if (userChoice === computerChoice) {
-		alert("Je to remíza!");
-		console.log("Je to remíza!");
-	} else if (winningCombinations[userChoice] === computerChoice) {
-		alert("Vyhráli jste!");
-		console.log("Uživatel vyhrává!");
-		userScore++;
-		await updateScoreboard();
-		await updateChoiceCount();
-	} else {
-		alert("Počítač vyhrává!");
-		console.log("Počítač vyhrává!");
-		computerScore++;
-		await updateScoreboard();
-		await updateChoiceCount();
+function determineWinner() {
+	let outcome = outCome(userChoice, computerChoice);
+	switch (outcome) {
+		case 'draw':
+			alert("Je to remíza!");
+			console.log("Je to remíza!");
+			break;
+		case 'userWins':
+			alert("Vyhráli jste!");
+			console.log("Uživatel vyhrává!");
+			userScore++;
+			updateScoreboard();
+			updateChoiceCount();
+			if (userScore === 5 || computerScore === 5) {
+				setTimeout(showTheWinner, 100);
+			}
+			break;
+		case 'computerWins':
+			alert("Počítač vyhrává!");
+			console.log("Počítač vyhrává!");
+			computerScore++;
+			updateScoreboard();
+			updateChoiceCount();
+			if (userScore === 5 || computerScore === 5) {
+				setTimeout(showTheWinner, 100);
+			}
+			break;
 	}
 }
 
@@ -49,12 +59,10 @@ function updateScoreboard() {
 
 async function showTheWinner() {
 	await updateScoreboard();
-	if (userScore === 5 || computerScore === 5) {
-		alert(`Konec hry! ${userScore === 5 ? 'Uživatel' : 'Počítač'} vyhrál!`);
-		console.log(`Konec hry! ${userScore === 5 ? 'Uživatel' : 'Počítač'} vyhrál!`);
-		console.log(gameHistory);
-		restartGameVariables();
-	}
+	alert(`Konec hry! ${userScore === 5 ? 'Uživatel' : 'Počítač'} vyhrál!`);
+	console.log(`Konec hry! ${userScore === 5 ? 'Uživatel' : 'Počítač'} vyhrál!`);
+	console.log(gameHistory);
+	restartGameVariables();
 }
 
 function getChoices() {
@@ -77,4 +85,9 @@ function restartGameVariables() {
 	updateScoreboard();
 	gameHistory = [];
 	choiceCount = { 'K': 0, 'P': 0, 'N': 0 };
+}
+
+function outCome(userChoice, computerChoice) {
+	return userChoice === computerChoice ? 'draw' :
+		winningCombinations[userChoice] === computerChoice ? 'userWins' : 'computerWins';
 }
